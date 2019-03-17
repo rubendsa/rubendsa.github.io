@@ -1,6 +1,6 @@
 ---
 title: "About"
-permalink: /about/
+permalink: /
 header:
     image: "/images/suavl_outdoor_top2.png"
 ---

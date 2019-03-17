@@ -1,13 +1,11 @@
 # main links
 main:
-  - title: "About"
-    url: /about/
   - title: "Research"
     url: /research/
-  - title: "test1"
-    url: /test1/
-  - title: "test2"
-    url: /test2/
+  # - title: "test1"
+  #   url: /test1/
+  # - title: "test2"
+  #   url: /test2/
   # - title: "Sample Posts"
   #   url: /year-archive/
   # - title: "Sample Collections"

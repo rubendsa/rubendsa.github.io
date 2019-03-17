@@ -130,8 +130,6 @@
         
         <a class="site-title" href="/">Ruben D'Sa</a>
         <ul class="visible-links"><li class="masthead__menu-item">
-              <a href="/about/" >About</a>
-            </li><li class="masthead__menu-item">
               <a href="/research/" >Research</a>
             </li><li class="masthead__menu-item">
               <a href="/test1/" >test1</a>
@@ -305,7 +303,152 @@
     
       <h1 id="page-title" class="page__title">test1</h1>
     
-    
+    <p>#Jekyll Markdown Quick Reference</p>
+
+<p>####Write in simply awesome <code class="highlighter-rouge">markdown</code></p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>layout: post
+<span class="gh">title: Markdown Style Guide
+---
+</span>
+This is a demo of all styled elements in Jekyll Now. 
+
+<span class="p">[</span><span class="nv">View the markdown used to create this post</span><span class="p">](</span><span class="sx">https://raw.githubusercontent.com/barryclark/www.jekyllnow.com/gh-pages/_posts/2014-6-19-Markdown-Style-Guide.md</span><span class="p">)</span>.
+
+This is a paragraph, it's surrounded by whitespace. Next up are some headers, they're heavily influenced by GitHub's markdown style.
+
+<span class="gu">## Header 2 (H1 is reserved for post titles)##</span>
+
+<span class="gu">### Header 3</span>
+
+<span class="gu">#### Header 4</span>
+ 
+A link to <span class="p">[</span><span class="nv">Jekyll Now</span><span class="p">](</span><span class="sx">http://github.com/barryclark/jekyll-now/</span><span class="p">)</span>. A big ass literal link <span class="nv">&lt;http://github.com/barryclark/jekyll-now/&gt;</span>
+  
+An image, located within /images
+
+<span class="p">![</span><span class="nv">an image alt text</span><span class="p">](</span><span class="sx">/images/suavl_indoor.png</span> <span class="nn">"an image title"</span><span class="p">)</span>
+<span class="p">
+*</span> A bulletted list
+<span class="p">-</span> alternative syntax 1
+<span class="p">+</span> alternative syntax 2
+<span class="p">  -</span> an indented list item
+<span class="p">
+1.</span> An
+<span class="p">2.</span> ordered
+<span class="p">3.</span> list
+
+Inline markup styles: 
+<span class="p">
+-</span> _italics_
+<span class="p">-</span> <span class="gs">**bold**</span>
+<span class="p">-</span> <span class="sb">`code()`</span> 
+<span class="gt"> 
+&gt; Blockquote</span>
+<span class="gt">&gt;&gt; Nested Blockquote </span>
+ 
+Syntax highlighting can be used by wrapping your code in a liquid tag like so:
+
+{% highlight javascript %}  
+/<span class="ge">* Some pointless Javascript *</span>/
+var rawr = <span class="p">[</span><span class="nv">"r", "a", "w", "r"</span><span class="p">]</span>;
+{% endhighlight %}  
+
+creates...<span class="sb">
+
+
+</span><span class="nt">&lt;figure</span> <span class="na">class=</span><span class="s">"highlight"</span><span class="nt">&gt;&lt;pre&gt;&lt;code</span> <span class="na">class=</span><span class="s">"language-javascript"</span> <span class="na">data-lang=</span><span class="s">"javascript"</span><span class="nt">&gt;&lt;span</span> <span class="na">class=</span><span class="s">"cm"</span><span class="nt">&gt;</span>/<span class="ge">* Some pointless Javascript *</span>/<span class="nt">&lt;/span&gt;</span>
+<span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"kd"</span><span class="nt">&gt;</span>var<span class="nt">&lt;/span&gt;</span> <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"nx"</span><span class="nt">&gt;</span>rawr<span class="nt">&lt;/span&gt;</span> <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"o"</span><span class="nt">&gt;</span>=<span class="nt">&lt;/span&gt;</span> <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"p"</span><span class="nt">&gt;</span><span class="p">[</span><span class="nv">&lt;/span&gt;&lt;span class="s2"&gt;"r"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"a"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"w"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"r"&lt;/span&gt;&lt;span class="p"&gt;</span><span class="p">]</span>;<span class="nt">&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</span>
+
+ 
+Use two trailing spaces  
+on the right  
+to create linebreak tags  
+ 
+Finally, horizontal lines
+<span class="gh"> 
+----
+</span><span class="p">****
+</span></code></pre></div></div>
+
+<hr />
+
+<p>####See below for how it beautifully renders in <code class="highlighter-rouge">HTML</code> 😉</p>
+
+<hr />
+<p>layout: post
+title: Markdown Style Guide
+—</p>
+
+<p>This is a demo of all styled elements in Jekyll Now.</p>
+
+<p><a href="https://raw.githubusercontent.com/barryclark/www.jekyllnow.com/gh-pages/_posts/2014-6-19-Markdown-Style-Guide.md">View the markdown used to create this post</a>.</p>
+
+<p>This is a paragraph, it’s surrounded by whitespace. Next up are some headers, they’re heavily influenced by GitHub’s markdown style.</p>
+
+<h2 id="header-2-h1-is-reserved-for-post-titles">Header 2 (H1 is reserved for post titles)##</h2>
+
+<h3 id="header-3">Header 3</h3>
+
+<h4 id="header-4">Header 4</h4>
+
+<p>A link to <a href="http://github.com/barryclark/jekyll-now/">Jekyll Now</a>. A big ass literal link <a href="http://github.com/barryclark/jekyll-now/">http://github.com/barryclark/jekyll-now/</a></p>
+
+<p>An image, located within /images</p>
+
+<p><img src="/images/jekyll-logo.png" alt="an image alt text" title="an image title" /></p>
+
+<ul>
+  <li>A bulletted list</li>
+  <li>alternative syntax 1</li>
+  <li>alternative syntax 2
+    <ul>
+      <li>an indented list item</li>
+    </ul>
+  </li>
+</ul>
+
+<ol>
+  <li>An</li>
+  <li>ordered</li>
+  <li>list</li>
+</ol>
+
+<p>Inline markup styles:</p>
+
+<ul>
+  <li><em>italics</em></li>
+  <li><strong>bold</strong></li>
+  <li><code class="highlighter-rouge">code()</code></li>
+</ul>
+
+<blockquote>
+  <p>Blockquote</p>
+  <blockquote>
+    <p>Nested Blockquote</p>
+  </blockquote>
+</blockquote>
+
+<p>Syntax highlighting can be used by wrapping your code in a liquid tag like so:</p>
+
+<p>{% highlight javascript %}<br />
+/* Some pointless Javascript */
+var rawr = [“r”, “a”, “w”, “r”];
+{% endhighlight %}</p>
+
+<p>creates…</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="cm">/* Some pointless Javascript */</span>
+<span class="kd">var</span> <span class="nx">rawr</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"r"</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">];</span></code></pre></figure>
+
+<p>Use two trailing spaces<br />
+on the right<br />
+to create linebreak tags</p>
+
+<p>Finally, horizontal lines</p>
+
+<hr />
+<hr />
 
   </div>
 </div>
