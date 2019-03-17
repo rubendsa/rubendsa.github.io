@@ -34,6 +34,6 @@ The Transformer UAV project demonstrates a first-of-a-kind shapeshifting based v
 
 ## Sim-to-real Transformer UAV
 <img align="left" width="700" height="700" src="/images/sim_to_real_1.png">
-While classical control techniques were used to successfully perform multiple transformations, many airframes were crashed in the process of testing controllers. A pursuit I am exploring is the use of reinforcement learning in controlling systems with challenging and unobservable dynamics. 
+While classical control techniques were used to successfully perform multiple transformations, many airframes were crashed in the process of testing controllers. A pursuit I am exploring is the use of reinforcement learning in controlling systems with challenging and unobservable dynamics. Currently exploring the use of AG-Tree from [https://arxiv.org/pdf/1707.05110](https://arxiv.org/pdf/1707.05110) with a larger action space for attitude and position control. 
 
 Source Code: [https://github.com/rubendsa/MIST-Bullet](https://github.com/rubendsa/MIST-Bullet)
