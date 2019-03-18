@@ -7,7 +7,7 @@ header:
 
 ---
 
-Welcome to my personal site. The primary purpose of this site is to share content related to my research and projects in robotics along with tutorials useful to the robotics development pipeline. I am currently a Ph.D. candidate at the University of Minnesota working in Papnikolopoulos lab in the Department of Computer Science and Engieering. Over the last few years, I've worked on the development of shapeshifting unmanned aerial vehicles, focusing on modeling and control. Before that I worked on extremum seeking DC-DC converters for solar-powered UAVs, and before that I worked on tissue heart valves and automation at medical device companies. 
+Welcome to my personal site. The primary purpose of this site is to share content related to my research and projects in robotics. I am currently a Ph.D. candidate at the University of Minnesota working in Papnikolopoulos lab in the Department of Computer Science and Engieering. Over the last few years, I've worked on the development of shapeshifting unmanned aerial vehicles, focusing on modeling and control. Before that I worked on extremum seeking DC-DC converters for solar-powered UAVs, and before that I worked on tissue heart valves and automation at medical device companies. 
 
 **Education:**
 - **University of Minnesota** (2013-2019(expected))
