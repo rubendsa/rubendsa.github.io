@@ -4,14 +4,14 @@ permalink: /research/
 title: "Research"
 # author_profile: true
 header: 
-    image: "/images/suavl_flying2.webp"
+    image: "/images/suavl_flying2.png"
     caption: "Solar UAV-Large flying autonomously at cruise altitude"
 
 ---
 
 ## Solar UAV-Large
 
-<img align="left" width="700" height="700" src="/images/suavl_indoor.webp">
+<img align="left" width="700" height="700" src="/images/suavl_indoor.png">
 The purpose of this project was to explore the development of a hand-launchable fixed-wing UAV capable of day-long and multi-day flight through the use of solar-power. My primary contributions were related to power electronics architecture and design, avionics. 
 
 ***Publications:*** 
@@ -19,7 +19,7 @@ The purpose of this project was to explore the development of a hand-launchable 
 
 
 ## Transformer UAV
-<img align="left" width="700" height="700" src="/images/transformer_icra2.webp">
+<img align="left" width="700" height="700" src="/images/transformer_icra2.png">
 The Transformer UAV project demonstrates a first-of-a-kind shapeshifting based vertical-takeoff-and-landing (VTOL) UAV. The inspiration for this pursuit stems from designing a UAV that combines the efficiency of fixed-wing flight with the manuvarability of multi-rotor flight. Combined with the energy surplus associated with solar-powered flight yielded a unique and rich research pursuit. Protoypes are named MultI-Section-Transformable (MIST)-UAV.
 
 ***Videos:*** 
@@ -33,7 +33,7 @@ The Transformer UAV project demonstrates a first-of-a-kind shapeshifting based v
 - [[6] Design and Experiments for MultI-Section-Transformable (MIST)-UAV](/papers/suav6)
 
 ## Sim-to-real Transformer UAV
-<img align="left" width="700" height="700" src="/images/sim_to_real_1.webp">
+<img align="left" width="700" height="700" src="/images/sim_to_real_1.png">
 While classical control techniques were used to successfully perform multiple transformations, many airframes were crashed in the process of testing controllers. A pursuit I am exploring is the use of reinforcement learning in controlling systems with challenging and unobservable dynamics. Currently exploring the use of AG-Tree from [https://arxiv.org/pdf/1707.05110](https://arxiv.org/pdf/1707.05110) with a larger action space for attitude and position control. 
 
 Source Code: [https://github.com/rubendsa/MIST-Bullet](https://github.com/rubendsa/MIST-Bullet)
