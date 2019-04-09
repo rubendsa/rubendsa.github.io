@@ -2,7 +2,7 @@
 title: "Welcome"
 permalink: /
 header:
-    image: "/images/transformer_2.webp"
+    image: "/images/transformer_2_compressed.jpeg"
     caption: "MIST-UAV performing multi-rotor to fixed-wing to multi-rotor transformation"
 
 ---
