@@ -107,7 +107,7 @@ analytics:
 # Site Author
 author:
   name             : "Ruben D'Sa"
-  avatar           : "/assets/images/bio_pic.jpeg"
+  avatar           : "/images/bio_pic_compressed.jpeg"
   bio              : "Robotics Researcher & Ph.D. Candidate"
   location         : "University of Minnesota"
   email            : "dsaxx005@umn.edu"
