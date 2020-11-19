@@ -108,9 +108,9 @@ analytics:
 author:
   name             : "Ruben D'Sa"
   avatar           : "/images/bio_pic_compressed.jpeg"
-  bio              : "Robotics Researcher & Ph.D. Candidate"
-  location         : "University of Minnesota"
-  email            : "dsaxx005@umn.edu"
+  bio              : "Robotics Engineer"
+  location         : "San Francisco"
+  email            : "dsa.ruben@gmail.com"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
