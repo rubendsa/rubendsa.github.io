@@ -7,7 +7,7 @@ header:
 
 ---
 
-Welcome to my personal site. The primary purpose of this site is to share content related to my research and projects in robotics. I am currently a robotics engineer at OpenAI working on generalizable robotic platforms. Over the last few years, I've worked on the development of shapeshifting unmanned aerial vehicles, focusing on modeling and control. Before that I worked on extremum seeking DC-DC converters for solar-powered UAVs, and before that I worked on tissue heart valves and automation at medical device companies. 
+Hey there! Welcome to my personal site. The purpose of this site is to share content related to my research and projects in robotics. Previously, I worked on the Robotics team at OpenAI focused on simulation, control, and generalizable robotic platforms. Over the last few years, I've worked on the development of shapeshifting unmanned aerial vehicles, focusing on modeling and control. Before that I worked on extremum seeking DC-DC converters for solar-powered UAVs, and before that I worked on tissue heart valves and automation at medical device companies. 
 
 **Education:**
 - **University of Minnesota**
@@ -15,6 +15,6 @@ Welcome to my personal site. The primary purpose of this site is to share conten
 <br />- M.S. Electrical Engineering (2015 - 2017)
 <br />- B.M.E Mechanical Engineering (2009 - 2013)
 
-**Interests:** Electro-mechanical design, simulation, control & estimation, reinforcement learning.
+**Interests:** Simulation, robotics, control & estimation, machine learning.
 
 
