@@ -7,7 +7,7 @@ header:
 
 ---
 
-Hey there! Welcome to my personal site. Come take a look around :). Previously, I worked on the Robotics team at OpenAI focused on simulation, control, and generalizable robotic platforms. Over the last few years, I’ve worked on the development of shapeshifting unmanned aerial vehicles, focusing on modeling and control. Before that I worked on extremum seeking DC-DC converters for solar-powered UAVs, and before that I worked on tissue heart valves and automation at medical device companies.
+Hey there! Welcome to my personal site. Previously, I worked on the Robotics team at OpenAI focused on simulation, control, and generalizable robotic platforms. During my Ph.D, I worked on the development of high endurance solar powered and shapeshifting UAVs, and before that I worked on custom automation for tissue heart valves at medical device companies.
 
 **Education:**
 - **University of Minnesota**
