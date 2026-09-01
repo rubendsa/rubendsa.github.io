@@ -1,0 +1,27 @@
+<aside class="notebook-rail" aria-label="Blog information">
+  <section class="notebook-rail__section">
+    <p class="notebook-rail__eyebrow">Field notes</p>
+    <p>Working notes on robot learning, simulation, and the systems that connect them.</p>
+  </section>
+
+  <section class="notebook-rail__section">
+    <h2>Recent</h2>
+    <ol class="notebook-rail__list">
+      {% for recent_post in site.posts limit:5 %}
+        <li>
+          <a href="{{ recent_post.url | relative_url }}">{{ recent_post.title }}</a>
+          <time datetime="{{ recent_post.date | date_to_xmlschema }}">{{ recent_post.date | date: "%b %Y" }}</time>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="notebook-rail__section">
+    <h2>Elsewhere</h2>
+    <ul class="notebook-rail__links">
+      <li><a href="{{ '/research/' | relative_url }}">Research</a></li>
+      <li><a href="https://github.com/rubendsa" rel="me">GitHub</a></li>
+      <li><a href="{{ '/feed.xml' | relative_url }}">RSS feed</a></li>
+    </ul>
+  </section>
+</aside>
