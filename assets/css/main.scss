@@ -220,7 +220,7 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 
 #main.notebook-shell {
   width: 100%;
-  max-width: 1080px;
+  max-width: 768px;
   margin: 0 auto;
   padding: 0 24px 100px;
   animation: none;
@@ -244,14 +244,6 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       text-underline-offset: 0.2em;
     }
   }
-}
-
-.notebook-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 720px) 220px;
-  gap: 60px;
-  align-items: start;
-  justify-content: space-between;
 }
 
 .notebook-article {
@@ -553,104 +545,6 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   }
 }
 
-.notebook-rail {
-  position: sticky;
-  top: 24px;
-  color: $notebook-muted;
-  font-family: $notebook-sans;
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-.notebook-rail__section {
-  padding: 18px 0 20px;
-  border-top: 1px solid $notebook-rule;
-
-  &:first-child {
-    padding-top: 0;
-    border-top: 0;
-  }
-
-  h2 {
-    margin: 0 0 12px;
-    color: $notebook-ink;
-    font-family: $notebook-serif;
-    font-size: 17px;
-  }
-
-  p {
-    margin: 0;
-  }
-}
-
-.notebook-rail__eyebrow {
-  margin: 0 0 7px !important;
-  color: $notebook-green-dark;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.notebook-rail__list,
-.notebook-rail__links {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  li {
-    margin: 0 0 10px;
-  }
-
-  a {
-    color: $notebook-ink;
-    font-weight: 650;
-    text-decoration: none;
-
-    &:hover,
-    &:focus {
-      color: $notebook-green-dark;
-      text-decoration: underline;
-      text-underline-offset: 0.16em;
-    }
-  }
-}
-
-.notebook-rail__list time {
-  display: block;
-  margin-top: 2px;
-  color: $notebook-muted;
-  font-size: 10px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-@media (max-width: 960px) {
-  #main.notebook-shell {
-    max-width: 760px;
-  }
-
-  .notebook-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 48px;
-  }
-
-  .notebook-rail {
-    position: static;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px;
-    padding-top: 24px;
-    border-top: 1px solid $notebook-rule;
-  }
-
-  .notebook-rail__section,
-  .notebook-rail__section:first-child {
-    padding: 0;
-    border-top: 0;
-  }
-}
-
 @media (max-width: 680px) {
   .notebook-theme .masthead__inner-wrap {
     padding-right: 16px;
@@ -758,9 +652,6 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     flex-direction: column;
   }
 
-  .notebook-rail {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -777,14 +668,12 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 @media print {
   .notebook-theme .masthead,
   .notebook-theme .page__footer,
-  .notebook-rail,
   .notebook-back,
   .notebook-article__footer {
     display: none;
   }
 
   #main.notebook-shell,
-  .notebook-grid,
   .notebook-article {
     display: block;
     max-width: none;

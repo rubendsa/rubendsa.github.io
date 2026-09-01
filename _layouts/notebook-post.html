@@ -5,31 +5,27 @@ layout: default
 <a class="notebook-skip" href="#notebook-content">Skip to article</a>
 
 <main class="notebook-shell notebook-shell--post" id="main">
-  <div class="notebook-back"><a href="{{ '/blog/' | relative_url }}"><span aria-hidden="true">←</span> All field notes</a></div>
+  <div class="notebook-back"><a href="{{ '/blog/' | relative_url }}"><span aria-hidden="true">←</span> All blog entries</a></div>
 
-  <div class="notebook-grid">
-    <article class="notebook-article" id="notebook-content" tabindex="-1" itemscope itemtype="https://schema.org/BlogPosting">
-      <header class="notebook-article__header">
-        <p class="notebook-article__number">Robot learning · Systems</p>
-        <h1 itemprop="headline">{{ page.title }}</h1>
-        {% if page.subtitle %}<p class="notebook-deck" itemprop="description">{{ page.subtitle }}</p>{% endif %}
-        <div class="notebook-meta">
-          <time datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">{{ page.date | date: "%B %-d, %Y" }}</time>
-          <span aria-hidden="true">·</span>
-          <span>{% include read-time.html %}</span>
-        </div>
-      </header>
-
-      <div class="notebook-prose" itemprop="articleBody">
-        {{ content }}
+  <article class="notebook-article" id="notebook-content" tabindex="-1" itemscope itemtype="https://schema.org/BlogPosting">
+    <header class="notebook-article__header">
+      <p class="notebook-article__number">Robot learning · Systems</p>
+      <h1 itemprop="headline">{{ page.title }}</h1>
+      {% if page.subtitle %}<p class="notebook-deck" itemprop="description">{{ page.subtitle }}</p>{% endif %}
+      <div class="notebook-meta">
+        <time datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">{{ page.date | date: "%B %-d, %Y" }}</time>
+        <span aria-hidden="true">·</span>
+        <span>{% include read-time.html %}</span>
       </div>
+    </header>
 
-      <footer class="notebook-article__footer">
-        <p>Filed under robot learning, simulation, and infrastructure.</p>
-        <a href="{{ '/blog/' | relative_url }}">Back to field notes <span aria-hidden="true">→</span></a>
-      </footer>
-    </article>
+    <div class="notebook-prose" itemprop="articleBody">
+      {{ content }}
+    </div>
 
-    {% include notebook-rail.html %}
-  </div>
+    <footer class="notebook-article__footer">
+      <p>Filed under robot learning, simulation, and infrastructure.</p>
+      <a href="{{ '/blog/' | relative_url }}">Back to blog <span aria-hidden="true">→</span></a>
+    </footer>
+  </article>
 </main>

@@ -18,7 +18,11 @@ layout: default
         <time datetime="{{ post.date | date_to_xmlschema }}" itemprop="datePublished">{{ post.date | date: "%b %-d, %Y" }}</time>
         <div class="blog-list__body">
           <h3 itemprop="headline"><a href="{{ post.url | relative_url }}" rel="bookmark">{{ post.title }}</a></h3>
-          <p itemprop="description">{{ post.excerpt | strip_html }}</p>
+          {% if post.subtitle %}
+            <p itemprop="description">{{ post.subtitle }}</p>
+          {% elsif post.description %}
+            <p itemprop="description">{{ post.description }}</p>
+          {% endif %}
           <span class="blog-list__read-time">{% include read-time.html %}</span>
         </div>
       </article>
