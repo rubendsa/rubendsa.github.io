@@ -4,7 +4,7 @@ subtitle: "Follow one training iteration from thousands of parallel robot worlds
 description: "An interactive, step-by-step visual guide to PPO in Isaac Lab: observations, actions, rollout storage, GAE, mini-batches, and the clipped policy update."
 excerpt: "An interactive, step-by-step visual guide to PPO in Isaac Lab: observations, actions, rollout storage, GAE, mini-batches, and the clipped policy update."
 date: 2026-09-01 01:00:00 +0000
-last_modified_at: 2026-09-01 01:00:00 +0000
+last_modified_at: 2026-09-01 08:47:00 +0000
 permalink: /blog/ppo-visualized-in-isaac-lab/
 categories:
   - robot-learning
@@ -34,11 +34,49 @@ This article follows [Isaac Lab develop on September 1, 2026](https://github.com
 
 ## One PPO iteration, step by step
 
-<div class="ppo-stepper" data-ppo-stepper aria-labelledby="ppo-stepper-title">
+<figure class="ppo-cycle" aria-labelledby="ppo-cycle-title">
+  <header class="ppo-cycle__header">
+    <div>
+      <p>One iteration · the complete data path</p>
+      <h3 id="ppo-cycle-title">Collect → build targets → learn → repeat</h3>
+    </div>
+    <div class="ppo-legend" aria-label="Diagram color key">
+      <span><i class="ppo-swatch ppo-swatch--policy"></i> policy + forward tensors</span>
+      <span><i class="ppo-swatch ppo-swatch--sim"></i> simulator + boundaries</span>
+      <span><i class="ppo-swatch ppo-swatch--learn"></i> critic + learned targets</span>
+      <span><i class="ppo-swatch ppo-swatch--storage"></i> fixed storage</span>
+    </div>
+  </header>
+
+  <div class="ppo-cycle__phasebar" aria-hidden="true">
+    <span class="ppo-cycle__phase ppo-cycle__phase--collect">Collect · repeat T times</span>
+    <span class="ppo-cycle__phase ppo-cycle__phase--targets">Build targets · once</span>
+    <span class="ppo-cycle__phase ppo-cycle__phase--learn">Learn · 4 batches × 5 epochs</span>
+    <span class="ppo-cycle__phase ppo-cycle__phase--repeat">Outer loop</span>
+  </div>
+
+  <ol class="ppo-cycle__nodes">
+    <li data-kind="policy"><small>Collect</small><span>01</span><strong>Observe</strong><code>[N, O]</code></li>
+    <li data-kind="policy"><small>Collect</small><span>02</span><strong>Act + step</strong><code>a, V, r, d</code></li>
+    <li data-kind="storage"><small>Collect</small><span>03</span><strong>Store</strong><code>[T, N, …]</code></li>
+    <li data-kind="learn"><small>Targets</small><span>04</span><strong>GAE</strong><code>A, R</code></li>
+    <li data-kind="storage"><small>Learn</small><span>05</span><strong>Sample</strong><code>[M, …]</code></li>
+    <li data-kind="learn"><small>Learn</small><span>06</span><strong>Optimize</strong><code>θ → θ′</code></li>
+    <li data-kind="sim"><small>Repeat</small><span>07</span><strong>Fresh rollout</strong><code>cursor → 0</code></li>
+  </ol>
+
+  <div class="ppo-cycle__loop">
+    <span><strong>Weights stay fixed while collecting.</strong> They change after every mini-batch while learning.</span>
+    <span aria-hidden="true">θ′ loops back to stage 01 ↺</span>
+  </div>
+  <figcaption>Only stage 02 advances physics. Stages 01–03 collect transition fields under fixed weights; stage 04 writes advantages and returns once; stages 05–06 revisit that complete frozen batch. Stage 07 keeps the updated networks and replaces the rollout.</figcaption>
+</figure>
+
+<div class="ppo-stepper ppo-stepper--crisp" data-ppo-stepper aria-labelledby="ppo-stepper-title">
   <div class="ppo-stepper__topline">
     <div>
-      <p class="ppo-stepper__eyebrow">Interactive walkthrough · one training iteration</p>
-      <h3 id="ppo-stepper-title">Follow the data, not the acronym</h3>
+      <p class="ppo-stepper__eyebrow">Interactive walkthrough · trace every tensor</p>
+      <h3 id="ppo-stepper-title">Open one stage at a time</h3>
     </div>
     <span class="ppo-stepper__counter" data-ppo-counter>01 / 07</span>
   </div>
@@ -60,149 +98,416 @@ This article follows [Isaac Lab develop on September 1, 2026](https://github.com
       <small>transitions</small>
     </div>
     <div class="ppo-stepper__stat">
-      <span>One mini-batch · B ÷ 4</span>
+      <span>One mini-batch · M = B ÷ 4</span>
       <strong data-ppo-minibatch>24,576</strong>
-      <small>samples · 20 updates total</small>
+      <small>samples · 20 optimizer steps</small>
     </div>
   </div>
 
   <div class="ppo-stepper__nav" role="tablist" aria-label="PPO iteration stages">
-    <button type="button" class="is-active" role="tab" aria-selected="true" aria-controls="ppo-stage-observe" data-ppo-step="0"><span>01</span> Observe</button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-act" data-ppo-step="1"><span>02</span> Act + step</button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-store" data-ppo-step="2"><span>03</span> Store</button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-advantage" data-ppo-step="3"><span>04</span> Advantage</button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-sample" data-ppo-step="4"><span>05</span> Sample</button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-optimize" data-ppo-step="5"><span>06</span> Optimize</button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-repeat" data-ppo-step="6"><span>07</span> Repeat</button>
+    <button type="button" class="is-active" role="tab" aria-selected="true" aria-controls="ppo-stage-observe" id="ppo-stage-tab-0" data-ppo-step="0"><span>01</span><small>Collect</small><b>Observe</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-act" tabindex="-1" id="ppo-stage-tab-1" data-ppo-step="1"><span>02</span><small>Collect</small><b>Act + step</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-store" tabindex="-1" id="ppo-stage-tab-2" data-ppo-step="2"><span>03</span><small>Collect</small><b>Store</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-advantage" tabindex="-1" id="ppo-stage-tab-3" data-ppo-step="3"><span>04</span><small>Targets</small><b>Advantage</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-sample" tabindex="-1" id="ppo-stage-tab-4" data-ppo-step="4"><span>05</span><small>Learn</small><b>Sample</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-optimize" tabindex="-1" id="ppo-stage-tab-5" data-ppo-step="5"><span>06</span><small>Learn</small><b>Optimize</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="ppo-stage-repeat" tabindex="-1" id="ppo-stage-tab-6" data-ppo-step="6"><span>07</span><small>Repeat</small><b>Fresh rollout</b></button>
   </div>
 
   <div class="ppo-stepper__panels">
-    <section class="ppo-stage is-active" id="ppo-stage-observe" role="tabpanel" tabindex="0" data-ppo-panel="0">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">01 · ObservationManager</p>
-        <h4>Observe every world as one batch</h4>
-        <p>Isaac Lab computes named observation groups for all <span data-ppo-envs>4,096</span> environments. Terms such as joint state, base velocity, commands, and previous actions are normally concatenated along the feature axis.</p>
-        <p>The actor and critic can select different groups. That lets the critic use privileged simulation state while the deployed actor sees only policy observations.</p>
-        <code>policy: [N, O<sub>policy</sub>] · critic: [N, O<sub>critic</sub>]</code>
-      </div>
-      <div class="ppo-observe-visual" aria-hidden="true">
-        <div class="ppo-worlds" data-ppo-world-grid></div>
-        <p><span data-ppo-envs>4,096</span> synchronized world slots</p>
-        <div class="ppo-tensor-sheet">
-          <span>TensorDict · batch [N]</span>
-          <b>policy</b><i></i><i></i><i></i><i></i><i></i>
-          <b>critic</b><i></i><i></i><i></i><i></i><i></i>
+    <section class="ppo-stage is-active" id="ppo-stage-observe" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-0" data-ppo-panel="0">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">01 · ObservationManager</p>
+          <h4>Turn N worlds into model-ready rows</h4>
+          <p>Isaac Lab computes every configured observation term across all environments at once, processes each term, and concatenates terms along the feature axis. One row belongs to one environment slot.</p>
         </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Input</dt><dd>simulator state + commands</dd></div>
+          <div><dt>Transform</dt><dd>compute → modify → noise → clip → scale</dd></div>
+          <div><dt>Output</dt><dd><code>TensorDict · batch [N]</code></dd></div>
+          <div><dt>Invariant</dt><dd>one shared network, N rows</dd></div>
+        </dl>
       </div>
-    </section>
 
-    <section class="ppo-stage" id="ppo-stage-act" role="tabpanel" tabindex="0" data-ppo-panel="1">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">02 · Actor, critic, environment</p>
-        <h4>Sample once, step every world</h4>
-        <p>One batched actor samples <code>[N, A]</code> actions—not one network per robot. Before the simulator moves, PPO keeps the action, value estimate, old log-probability, and distribution parameters beside the current observation.</p>
-        <p>Isaac Lab transforms each policy action, advances several physics ticks, computes reward and termination, resets finished slots, and returns the next observation.</p>
-      </div>
-      <div class="ppo-act-visual" aria-hidden="true">
-        <div class="ppo-flow-chip">obs<sub>t</sub><small>[N, O]</small></div>
-        <span aria-hidden="true">→</span>
-        <div class="ppo-model-pair">
-          <div><small>actor</small><strong>π<sub>θ</sub></strong><span>a<sub>t</sub>, log π<sub>old</sub></span></div>
-          <div><small>critic</small><strong>V<sub>θ</sub></strong><span>V<sub>t</sub></span></div>
+      <figure class="ppo-diagram" aria-labelledby="ppo-observe-caption">
+        <div class="ppo-flow ppo-flow--observe">
+          <div class="ppo-node" data-kind="sim">
+            <span>Isaac Lab · vectorized scene</span>
+            <strong><span data-ppo-envs>4,096</span> synchronized worlds</strong>
+            <div class="ppo-token-row"><code>base velocity</code><code>joint state</code><code>commands</code><code>previous action</code></div>
+          </div>
+          <div class="ppo-arrow"><span>read all N slots</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node" data-kind="policy">
+            <span>ObservationManager</span>
+            <strong>Process each named term</strong>
+            <div class="ppo-process-row"><i>compute</i><b>›</b><i>modifiers</i><b>›</b><i>noise</i><b>›</b><i>clip</i><b>›</b><i>scale</i></div>
+            <small>configured terms concatenate on the last dimension</small>
+          </div>
+          <div class="ppo-arrow"><span>group by consumer</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node-stack">
+            <div class="ppo-node" data-kind="policy">
+              <span>Actor input · Go2 default</span>
+              <strong>policy group</strong>
+              <code>[N, O<sub>policy</sub>]</code>
+            </div>
+            <div class="ppo-node" data-kind="learn">
+              <span>Critic input</span>
+              <strong>Go2 reuses policy</strong>
+              <code>[N, O<sub>policy</sub>]</code>
+              <small>optional asymmetric setups use a separate privileged critic group</small>
+            </div>
+          </div>
         </div>
-        <span aria-hidden="true">→</span>
-        <div class="ppo-sim-chip"><small>Isaac Lab</small><strong>ActionManager</strong><span>decimation × physics</span></div>
-        <div class="ppo-act-visual__return"><span>reward r<sub>t</sub></span><span>done d<sub>t</sub></span><span>obs<sub>t+1</sub></span><b aria-hidden="true">↩</b></div>
-      </div>
+        <figcaption id="ppo-observe-caption"><strong>Shape rule:</strong> the leading dimension is always the environment batch <code>N</code>; observation terms only change the feature width <code>O</code>.</figcaption>
+      </figure>
     </section>
 
-    <section class="ppo-stage" id="ppo-stage-store" role="tabpanel" tabindex="0" data-ppo-panel="2">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">03 · RolloutStorage</p>
-        <h4>Write one complete time row</h4>
-        <p>The post-step reward and done flag complete the transition that began with <code>obs<sub>t</sub></code>. Storage copies one row across every environment, then advances its time cursor.</p>
-        <p>After <span data-ppo-horizon>24</span> environment steps, the rectangle holds <strong data-ppo-transitions>98,304</strong> transitions. RSL-RL does not keep a separate <code>next_obs</code> tensor.</p>
-      </div>
-      <div class="ppo-buffer-visual" aria-hidden="true">
-        <div class="ppo-buffer-visual__axis"><span>time · T</span><b>environment · N →</b></div>
-        <div class="ppo-buffer-grid" data-ppo-buffer-grid></div>
-        <div class="ppo-buffer-visual__fields"><span>obs</span><span>action</span><span>reward</span><span>done</span><span>V</span><span>log π<sub>old</sub></span></div>
-        <p>[<span data-ppo-horizon>24</span>, <span data-ppo-envs>4,096</span>, …]</p>
-      </div>
-    </section>
-
-    <section class="ppo-stage" id="ppo-stage-advantage" role="tabpanel" tabindex="0" data-ppo-panel="3">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">04 · Bootstrap + GAE</p>
-        <h4>Walk backward to assign credit</h4>
-        <p>The critic first evaluates the final observation <code>obs<sub>T</sub></code>. Generalized Advantage Estimation then walks from the last stored step toward the first, mixing one-step surprise with later evidence.</p>
-        <p>A done mask stops information from leaking across asynchronous episode resets. The resulting return becomes the critic target; normalized advantage tells the actor which sampled actions were better or worse than expected.</p>
-      </div>
-      <div class="ppo-gae-visual">
-        <div class="ppo-formula"><span>TD surprise</span><code>δ<sub>t</sub> = r<sub>t</sub> + γ(1−d<sub>t</sub>)V<sub>t+1</sub> − V<sub>t</sub></code></div>
-        <div class="ppo-formula"><span>GAE</span><code>A<sub>t</sub> = δ<sub>t</sub> + γλ(1−d<sub>t</sub>)A<sub>t+1</sub></code></div>
-        <div class="ppo-gae-visual__steps" aria-label="Advantages are calculated backward from the final step">
-          <i>t</i><i>t+1</i><i>t+2</i><i>…</i><i>T−1</i><b aria-hidden="true">← compute backward</b>
+    <section class="ppo-stage" id="ppo-stage-act" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-1" data-ppo-panel="1">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">02 · Actor, critic, environment</p>
+          <h4>Cache first, then advance physics</h4>
+          <p>The actor samples one action row per environment and the critic predicts one value. PPO freezes that pre-step snapshot before Isaac Lab transforms actions, runs four physics ticks, computes feedback, and resets only finished slots.</p>
         </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Input</dt><dd><code>obs<sub>t</sub> · [N, O]</code></dd></div>
+          <div><dt>Policy</dt><dd><code>a<sub>t</sub> · [N, A]</code></dd></div>
+          <div><dt>Critic</dt><dd><code>V<sub>t</sub> · [N, 1]</code></dd></div>
+          <div><dt>Weights</dt><dd>fixed for all T collection steps</dd></div>
+        </dl>
       </div>
-    </section>
 
-    <section class="ppo-stage" id="ppo-stage-sample" role="tabpanel" tabindex="0" data-ppo-panel="4">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">05 · Flatten + shuffle</p>
-        <h4>Turn the rectangle into mini-batches</h4>
-        <p>For a feed-forward policy, storage flattens time and environment: <code>[T, N, …] → [B, …]</code>. One random permutation divides <strong data-ppo-transitions>98,304</strong> samples into four mini-batches of <strong data-ppo-minibatch>24,576</strong>.</p>
-        <p>The same shuffled partition is revisited for five learning epochs. Recurrent policies take a different route: trajectories are split at done flags, padded, and sampled with masks.</p>
-      </div>
-      <div class="ppo-sample-visual" aria-hidden="true">
-        <div class="ppo-sample-visual__label"><span>rollout order</span><b>[T × N]</b></div>
-        <div class="ppo-sample-source" data-ppo-sample-source></div>
-        <div class="ppo-shuffle-arrow"><span>randperm</span><b>⇣</b></div>
-        <div class="ppo-sample-visual__label"><span>mini-batch 1 of 4</span><b>[<span data-ppo-minibatch>24,576</span>, …]</b></div>
-        <div class="ppo-minibatch" data-ppo-minibatch-grid></div>
-      </div>
-    </section>
-
-    <section class="ppo-stage" id="ppo-stage-optimize" role="tabpanel" tabindex="0" data-ppo-panel="5">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">06 · PPO update</p>
-        <h4>Improve the policy with a clipped incentive</h4>
-        <p>The current actor re-evaluates each stored action. The ratio <code>r = exp(log π<sub>θ</sub> − log π<sub>old</sub>)</code> measures how much its probability changed. PPO clips the incentive outside <code>1 ± ε</code>, usually 0.8–1.2 when ε = 0.2.</p>
-        <p>Each mini-batch also trains the critic toward the return target and rewards policy entropy. Gradient clipping precedes one optimizer step: four batches × five epochs = <strong>20 updates</strong>.</p>
-      </div>
-      <div class="ppo-loss-visual" aria-hidden="true">
-        <div class="ppo-ratio">
-          <span class="ppo-ratio__zone"></span>
-          <span class="ppo-ratio__tick ppo-ratio__tick--left">0.8</span>
-          <span class="ppo-ratio__tick ppo-ratio__tick--mid">1.0</span>
-          <span class="ppo-ratio__tick ppo-ratio__tick--right">1.2</span>
-          <i></i>
+      <figure class="ppo-diagram" aria-labelledby="ppo-act-caption">
+        <div class="ppo-act-models">
+          <div class="ppo-node ppo-node--compact" data-kind="policy">
+            <span>Observation at t</span>
+            <strong>policy / critic rows</strong>
+            <code>[N, O]</code>
+          </div>
+          <div class="ppo-arrow"><span>one batched forward per model</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-model-split">
+            <div class="ppo-node" data-kind="policy">
+              <span>Actor · π<sub>θ</sub></span>
+              <strong>sample Gaussian action</strong>
+              <code>a<sub>t</sub> [N,A]</code>
+              <small>also μ, σ and summed log π<sub>old</sub></small>
+            </div>
+            <div class="ppo-node" data-kind="learn">
+              <span>Critic · V<sub>φ</sub></span>
+              <strong>estimate state value</strong>
+              <code>V<sub>t</sub> [N,1]</code>
+            </div>
+          </div>
+          <div class="ppo-arrow"><span>cache before physics</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node" data-kind="storage">
+            <span>Pending transition</span>
+            <strong>obs, a, V, log π<sub>old</sub>, μ, σ</strong>
+            <small>the behavior-policy snapshot stays frozen</small>
+          </div>
         </div>
-        <div class="ppo-loss-stack">
-          <div><span>actor</span><strong>clipped surrogate</strong><small>do not move too far</small></div>
-          <b>+</b>
-          <div><span>critic</span><strong>value error</strong><small>fit return targets</small></div>
-          <b>−</b>
-          <div><span>explore</span><strong>entropy</strong><small>retain action spread</small></div>
+
+        <div class="ppo-act-environment">
+          <div class="ppo-node ppo-node--compact" data-kind="policy">
+            <span>Original sample</span>
+            <strong>a<sub>t</sub></strong>
+            <small>this is what storage keeps</small>
+          </div>
+          <div class="ppo-arrow"><span>optional wrapper clamp</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node ppo-node--compact" data-kind="sim">
+            <span>ActionManager</span>
+            <strong>transform action</strong>
+          </div>
+          <div class="ppo-arrow"><span>decimation = 4</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node ppo-node--compact" data-kind="sim">
+            <span>Simulator</span>
+            <strong>physics × 4</strong>
+            <small>terminate → reward → reset done slots</small>
+          </div>
+          <div class="ppo-arrow"><span>return</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node ppo-node--compact" data-kind="sim">
+            <span>Feedback</span>
+            <strong>r<sub>t</sub>, done<sub>t</sub>, obs<sub>t+1</sub>, extras</strong>
+            <small>done = terminated OR truncated</small>
+          </div>
         </div>
-      </div>
+        <figcaption id="ppo-act-caption"><strong>Boundary rule:</strong> for a done slot, <code>obs<sub>t+1</sub></code> is already the reset-state observation. The stored action remains the actor’s original sample, not the optional action-clamped tensor.</figcaption>
+      </figure>
     </section>
 
-    <section class="ppo-stage" id="ppo-stage-repeat" role="tabpanel" tabindex="0" data-ppo-panel="6">
-      <div class="ppo-stage__copy">
-        <p class="ppo-stage__label">07 · Fresh on-policy data</p>
-        <h4>Reset the cursor, keep the weights</h4>
-        <p>The actor and critic were updated in place, so the next call to <code>act()</code> automatically uses the new parameters. Rollout storage only resets its write cursor; the old contents will be overwritten.</p>
-        <p>This is the meaning of <em>on-policy</em> here: the next optimization phase learns from a new rollout generated by the policy that now exists—not from an ever-growing replay database.</p>
+    <section class="ppo-stage" id="ppo-stage-store" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-2" data-ppo-panel="2">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">03 · RolloutStorage</p>
+          <h4>Complete one time row, then move the cursor</h4>
+          <p><code>process_env_step()</code> attaches post-step reward and done to the cached snapshot. After <span data-ppo-horizon>24</span> rows, storage contains <strong data-ppo-transitions>98,304</strong> transitions arranged time-major.</p>
+        </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Before step</dt><dd>obs, action, value, old policy stats</dd></div>
+          <div><dt>After step</dt><dd>reward + done</dd></div>
+          <div><dt>One row</dt><dd><code>[N, …]</code></dd></div>
+          <div><dt>Full rollout</dt><dd><code>[T, N, …]</code></dd></div>
+        </dl>
       </div>
-      <div class="ppo-repeat-visual" aria-hidden="true">
-        <div><span>new θ</span><strong>Actor</strong><small>batched inference</small></div>
-        <b aria-hidden="true">→</b>
-        <div><span>fresh B</span><strong>Rollout</strong><small><span data-ppo-transitions>98,304</span> transitions</small></div>
-        <b aria-hidden="true">→</b>
-        <div><span>20 steps</span><strong>Update</strong><small>4 batches × 5 epochs</small></div>
-        <p><span aria-hidden="true">↖</span> repeat until the training iteration budget is exhausted</p>
+
+      <figure class="ppo-diagram" aria-labelledby="ppo-store-caption">
+        <div class="ppo-record-assembly">
+          <div class="ppo-node" data-kind="storage">
+            <span>Cached by act()</span>
+            <strong>pre-step record</strong>
+            <div class="ppo-token-row"><code>obs [N,O]</code><code>action [N,A]</code><code>V [N,1]</code><code>log π [N]</code><code>μ, σ [N,A]</code></div>
+          </div>
+          <div class="ppo-plus" aria-hidden="true">+</div>
+          <div class="ppo-node" data-kind="sim">
+            <span>Attached by process_env_step()</span>
+            <strong>post-step feedback</strong>
+            <div class="ppo-token-row"><code>reward [N]</code><code>done [N]</code></div>
+            <small>timeout first adds γ times cached pre-step V<sub>t</sub> to reward; done stays 1</small>
+          </div>
+          <div class="ppo-arrow"><span>copy row t</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node ppo-node--compact" data-kind="storage">
+            <span>Cursor</span>
+            <strong>t → t + 1</strong>
+            <code>scalar fields reshape to [N,1]</code>
+          </div>
+        </div>
+
+        <div class="ppo-buffer-map">
+          <div class="ppo-buffer-matrix" role="img" aria-label="Time-major rollout matrix with T rows and N environment columns; every cell is one transition record">
+            <b>time ↓ / env →</b><b>n = 0</b><b>n = 1</b><b>…</b><b>n = N−1</b>
+            <b>t = 0</b><span>[0,0]</span><span>[0,1]</span><span>…</span><span>[0,N−1]</span>
+            <b>t = 1</b><span>[1,0]</span><span>[1,1]</span><span>…</span><span>[1,N−1]</span>
+            <b>⋮</b><span>⋮</span><span>⋮</span><span>⋱</span><span>⋮</span>
+            <b class="is-current">t = T−1</b><span class="is-current">[T−1,0]</span><span class="is-current">[T−1,1]</span><span class="is-current">…</span><span class="is-current">[T−1,N−1]</span>
+          </div>
+          <aside class="ppo-buffer-record">
+            <span>Every [t,n] cell indexes the same tensor channels</span>
+            <ul>
+              <li><code>obs · O<sub>g</sub></code></li>
+              <li><code>action · A</code></li>
+              <li><code>reward, done, V, log π · 1</code></li>
+              <li><code>μ, σ · A</code></li>
+            </ul>
+            <strong><span data-ppo-horizon>24</span> × <span data-ppo-envs>4,096</span> = <span data-ppo-transitions>98,304</span></strong>
+          </aside>
+        </div>
+        <figcaption id="ppo-store-caption"><strong>Storage rule:</strong> fields are separate tensors that share the same <code>[T,N]</code> leading axes. RSL-RL does not allocate a separate <code>next_obs</code> tensor.</figcaption>
+      </figure>
+    </section>
+
+    <section class="ppo-stage" id="ppo-stage-advantage" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-3" data-ppo-panel="3">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">04 · Bootstrap + GAE</p>
+          <h4>Walk backward without crossing resets</h4>
+          <p>The critic evaluates the final observation once. GAE then scans from <code>T−1</code> to <code>0</code>, carrying later evidence backward until a done mask cuts the chain.</p>
+        </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Bootstrap</dt><dd><code>V(obs<sub>T</sub>) · [N,1]</code></dd></div>
+          <div><dt>Direction</dt><dd><code>t = T−1 … 0</code></dd></div>
+          <div><dt>Actor target</dt><dd><code>A · [T,N,1]</code></dd></div>
+          <div><dt>Critic target</dt><dd><code>R · [T,N,1]</code></dd></div>
+        </dl>
       </div>
+
+      <figure class="ppo-diagram" aria-labelledby="ppo-gae-caption">
+        <div class="ppo-bootstrap">
+          <div class="ppo-node ppo-node--compact" data-kind="policy"><span>Final observation</span><strong>obs<sub>T</sub></strong><code>[N,O]</code></div>
+          <div class="ppo-arrow ppo-arrow--dashed"><span>critic only</span><b aria-hidden="true">⇢</b></div>
+          <div class="ppo-node ppo-node--compact" data-kind="learn"><span>Bootstrap</span><strong>V<sub>T</sub> = V(obs<sub>T</sub>)</strong><code>[N,1]</code></div>
+        </div>
+
+        <div class="ppo-backward">
+          <div class="ppo-backward__label"><span>computed right → left</span><b aria-hidden="true">←</b></div>
+          <div class="ppo-backward__steps">
+            <span>t = 0</span><span>t = 1</span><i><b>done = 1</b><small>mask = 0 · stop</small></i><span>…</span><span>t = T−2</span><span>t = T−1</span>
+          </div>
+        </div>
+
+        <div class="ppo-formula-grid">
+          <div data-kind="learn"><span>1 · TD residual</span><code>δ<sub>t</sub> = r<sub>t</sub> + γ(1−d<sub>t</sub>)V<sub>t+1</sub> − V<sub>t</sub></code></div>
+          <div data-kind="learn"><span>2 · Advantage</span><code>A<sub>t</sub> = δ<sub>t</sub> + γλ(1−d<sub>t</sub>)A<sub>t+1</sub></code></div>
+          <div data-kind="learn"><span>3 · Return target</span><code>R<sub>t</sub> = A<sub>t</sub> + V<sub>t</sub></code></div>
+        </div>
+
+        <div class="ppo-output-pair">
+          <div class="ppo-node ppo-node--compact" data-kind="policy"><span>Actor signal</span><strong>normalize A across T × N</strong><code>[T,N,1]</code></div>
+          <div class="ppo-node ppo-node--compact" data-kind="learn"><span>Critic target</span><strong>keep return R unnormalized</strong><code>[T,N,1]</code></div>
+        </div>
+        <figcaption id="ppo-gae-caption"><strong>Boundary rule:</strong> <code>V<sub>t+1</sub></code> comes from the next stored value, except at the last row where <code>V<sub>T</sub></code> is used. Timeout rewards are already corrected, but the recursion is still masked.</figcaption>
+      </figure>
+    </section>
+
+    <section class="ppo-stage" id="ppo-stage-sample" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-4" data-ppo-panel="4">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">05 · Flatten + shuffle</p>
+          <h4>Change the view, not the data</h4>
+          <p>For a feed-forward policy, every field needed by the PPO update is flattened in the same order, indexed by one random permutation, and split into four equal mini-batches. RSL-RL reuses that partition for five learning epochs.</p>
+        </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Before</dt><dd><code>[T, N, …]</code></dd></div>
+          <div><dt>Flatten</dt><dd><code>[B, …] · B = T × N</code></dd></div>
+          <div><dt>Mini-batch</dt><dd><code>[M, …] · M = B ÷ 4</code></dd></div>
+          <div><dt>Reuse</dt><dd>4 batches × 5 epochs = 20 updates</dd></div>
+        </dl>
+      </div>
+
+      <figure class="ppo-diagram" aria-labelledby="ppo-sample-caption">
+        <div class="ppo-sample-transform">
+          <div>
+            <span>1 · time-major indices</span>
+            <strong>[T,N]</strong>
+            <div class="ppo-id-matrix" aria-label="Representative time and environment indices">
+              <i>0,0</i><i>0,1</i><i>0,2</i><i>0,3</i>
+              <i>1,0</i><i>1,1</i><i>1,2</i><i>1,3</i>
+              <i>2,0</i><i>2,1</i><i>2,2</i><i>2,3</i>
+            </div>
+          </div>
+          <div class="ppo-arrow"><span>flatten update fields</span><b aria-hidden="true">→</b></div>
+          <div>
+            <span>2 · flat positions</span>
+            <strong>[B]</strong>
+            <div class="ppo-id-vector"><i>0</i><i>1</i><i>2</i><i>3</i><i>N</i><i>N+1</i><i>…</i><i>B−1</i></div>
+          </div>
+          <div class="ppo-arrow"><span>randperm once</span><b aria-hidden="true">→</b></div>
+          <div>
+            <span>3 · shuffled indices</span>
+            <strong>perm[B]</strong>
+            <div class="ppo-id-vector ppo-id-vector--shuffled"><i>7</i><i>0</i><i>N+1</i><i>B−1</i><i>3</i><i>12</i><i>…</i><i>2</i></div>
+          </div>
+        </div>
+
+        <div class="ppo-batches">
+          <div><span>Mini-batch 1</span><strong>perm[0 : M]</strong><code>[<span data-ppo-minibatch>24,576</span>, …]</code></div>
+          <div><span>Mini-batch 2</span><strong>perm[M : 2M]</strong><code>[<span data-ppo-minibatch>24,576</span>, …]</code></div>
+          <div><span>Mini-batch 3</span><strong>perm[2M : 3M]</strong><code>[<span data-ppo-minibatch>24,576</span>, …]</code></div>
+          <div><span>Mini-batch 4</span><strong>perm[3M : 4M]</strong><code>[<span data-ppo-minibatch>24,576</span>, …]</code></div>
+        </div>
+
+        <div class="ppo-epoch-loop">
+          <span>Same frozen partition</span>
+          <ol><li>epoch 1</li><li>epoch 2</li><li>epoch 3</li><li>epoch 4</li><li>epoch 5</li></ol>
+          <strong>Each epoch visits all 4 mini-batches → 20 optimizer steps</strong>
+        </div>
+
+        <div class="ppo-field-strip">
+          <span>Each sampled index selects every field together:</span>
+          <code>obs [M,O]</code><code>action [M,A]</code><code>old V / log π / A / R [M,1]</code><code>old μ, σ [M,A]</code>
+        </div>
+        <figcaption id="ppo-sample-caption"><strong>Frozen-data rule:</strong> targets and old-policy statistics never change during the five epochs. If <code>B</code> is not divisible by four, the remainder is omitted; this Go2 batch divides exactly.</figcaption>
+      </figure>
+    </section>
+
+    <section class="ppo-stage" id="ppo-stage-optimize" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-5" data-ppo-panel="5">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">06 · PPO update</p>
+          <h4>Re-score stored actions, then update once</h4>
+          <p>The current networks evaluate the exact actions collected earlier. PPO compares current and frozen behavior probabilities, combines actor, critic, and entropy terms, clips gradients, and runs one optimizer step per mini-batch.</p>
+        </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Frozen</dt><dd>action, old log π, old V, A, R, μ, σ</dd></div>
+          <div><dt>Recomputed</dt><dd>new log π, value, entropy, μ, σ</dd></div>
+          <div><dt>Clip</dt><dd>objective incentive at <code>1 ± ε</code></dd></div>
+          <div><dt>Output</dt><dd>updated actor θ′ + critic φ′</dd></div>
+        </dl>
+      </div>
+
+      <figure class="ppo-diagram" aria-labelledby="ppo-optimize-caption">
+        <div class="ppo-optimize-flow">
+          <div class="ppo-node" data-kind="storage">
+            <span>Frozen mini-batch</span>
+            <strong>behavior data + targets</strong>
+            <div class="ppo-token-row"><code>obs</code><code>stored action</code><code>log π<sub>old</sub></code><code>V<sub>old</sub></code><code>A</code><code>R</code></div>
+          </div>
+          <div class="ppo-arrow"><span>re-score stored action</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node" data-kind="policy">
+            <span>Current actor + critic</span>
+            <strong>new forward pass</strong>
+            <div class="ppo-token-row"><code>log π<sub>θ</sub></code><code>V<sub>φ</sub></code><code>entropy</code><code>μ<sub>θ</sub>, σ<sub>θ</sub></code></div>
+            <small>later mini-batches see the latest weights</small>
+          </div>
+          <div class="ppo-arrow"><span>compose loss</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node" data-kind="learn">
+            <span>Total loss</span>
+            <strong>surrogate + c<sub>v</sub> value − c<sub>e</sub> entropy</strong>
+            <small>Go2 also clips the value prediction around V<sub>old</sub></small>
+          </div>
+          <div class="ppo-arrow"><span>backward</span><b aria-hidden="true">→</b></div>
+          <div class="ppo-node" data-kind="learn">
+            <span>One optimizer step</span>
+            <strong>zero grad → backward → clip → step</strong>
+            <small>clip actor and critic gradient norms to 1.0</small>
+          </div>
+        </div>
+
+        <div class="ppo-ratio-demo">
+          <div>
+            <span>Clipped surrogate · example with A &gt; 0</span>
+            <code>r = exp(log π<sub>θ</sub> − log π<sub>old</sub>) = 1.28</code>
+          </div>
+          <div class="ppo-ratio-band" role="img" aria-label="Example probability ratio 1.28 lies above the positive-advantage clip boundary 1.2">
+            <i class="ppo-ratio-band__safe"></i>
+            <span class="ppo-ratio-band__tick ppo-ratio-band__tick--low">0.8</span>
+            <span class="ppo-ratio-band__tick ppo-ratio-band__tick--one">1.0</span>
+            <span class="ppo-ratio-band__tick ppo-ratio-band__tick--high">1.2</span>
+            <b>1.28</b>
+          </div>
+          <div class="ppo-ratio-demo__result">
+            <span>ratio remains 1.28</span>
+            <b aria-hidden="true">→</b>
+            <strong>objective uses min(1.28A, 1.20A) = 1.20A</strong>
+          </div>
+        </div>
+
+        <div class="ppo-update-notes">
+          <span><strong>Adaptive KL:</strong> analytic KL(old ‖ current) adjusts the learning rate before the step; it does not end the epoch.</span>
+          <span><strong>20 total steps:</strong> 4 mini-batches × 5 epochs, each compared with the same frozen behavior statistics.</span>
+        </div>
+        <figcaption id="ppo-optimize-caption"><strong>Clip rule:</strong> PPO clips the improvement incentive in the surrogate objective. It does not clamp the actual policy ratio and is not a hard trust region.</figcaption>
+      </figure>
+    </section>
+
+    <section class="ppo-stage" id="ppo-stage-repeat" role="tabpanel" tabindex="0" aria-labelledby="ppo-stage-tab-6" data-ppo-panel="6">
+      <div class="ppo-stage__intro">
+        <div class="ppo-stage__copy">
+          <p class="ppo-stage__label">07 · Fresh on-policy data</p>
+          <h4>Keep the weights, overwrite the rollout</h4>
+          <p>The actor and critic were updated in place. Storage resets only its write cursor, unfinished episodes continue from <code>obs<sub>T</sub></code>, and the next <code>act()</code> starts a fresh rollout with the new policy.</p>
+        </div>
+        <dl class="ppo-stage__io">
+          <div><dt>Keep</dt><dd>θ′, φ′, obs<sub>T</sub>, allocated tensors</dd></div>
+          <div><dt>Reset</dt><dd>storage write cursor → 0</dd></div>
+          <div><dt>Do not reset</dt><dd>all environments globally</dd></div>
+          <div><dt>Replace</dt><dd>old rollout with fresh on-policy data</dd></div>
+        </dl>
+      </div>
+
+      <figure class="ppo-diagram" aria-labelledby="ppo-repeat-caption">
+        <div class="ppo-state-change">
+          <div data-state="keep">
+            <span>Keep across iterations</span>
+            <strong>updated actor θ′ + critic φ′</strong>
+            <strong>current obs<sub>T</sub></strong>
+            <small>unfinished episodes continue; only done slots reset inside env.step()</small>
+          </div>
+          <div data-state="reset">
+            <span>Reset logically</span>
+            <strong>RolloutStorage cursor → 0</strong>
+            <small>allocated tensors stay in memory and are overwritten</small>
+          </div>
+        </div>
+
+        <ol class="ppo-outer-loop">
+          <li data-kind="policy"><span>1</span><strong>act with θ′</strong><small>one batched policy</small></li>
+          <li data-kind="sim"><span>2</span><strong>collect T new steps</strong><small><span data-ppo-envs>4,096</span> continuing world slots</small></li>
+          <li data-kind="storage"><span>3</span><strong>fill fresh rollout</strong><small><span data-ppo-transitions>98,304</span> transitions</small></li>
+          <li data-kind="learn"><span>4</span><strong>run 20 updates</strong><small>θ′ → θ″, φ′ → φ″</small></li>
+        </ol>
+        <div class="ppo-outer-loop__return"><span>No replay database · no separate old-policy network · no policy copy per robot</span><b aria-hidden="true">θ″ returns to step 1 ↺</b></div>
+        <figcaption id="ppo-repeat-caption"><strong>On-policy rule:</strong> once the update finishes, the old rollout is logically discarded. The next optimization phase learns only from experience collected by the policy that now exists.</figcaption>
+      </figure>
     </section>
   </div>
 

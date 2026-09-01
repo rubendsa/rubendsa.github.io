@@ -21,20 +21,6 @@
     });
   }
 
-  function addCells(container, count, decorate) {
-    if (!container || container.children.length) {
-      return;
-    }
-
-    var fragment = document.createDocumentFragment();
-    for (var index = 0; index < count; index += 1) {
-      var cell = document.createElement("span");
-      decorate(cell, index);
-      fragment.appendChild(cell);
-    }
-    container.appendChild(fragment);
-  }
-
   each(steppers, function (root) {
     var tabs = root.querySelectorAll("[data-ppo-step]");
     var panels = root.querySelectorAll("[data-ppo-panel]");
@@ -47,25 +33,8 @@
     var horizonInput = root.querySelector("[data-ppo-horizon-input]");
     var envOutput = root.querySelector("[data-ppo-env-output]");
     var horizonOutput = root.querySelector("[data-ppo-horizon-output]");
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var currentStage = 0;
-
-    addCells(root.querySelector("[data-ppo-world-grid]"), 20, function (cell, index) {
-      cell.style.setProperty("--cell-index", index);
-    });
-
-    addCells(root.querySelector("[data-ppo-buffer-grid]"), 96, function (cell, index) {
-      cell.style.setProperty("--row-index", Math.floor(index / 12));
-    });
-
-    addCells(root.querySelector("[data-ppo-sample-source]"), 36, function (cell, index) {
-      cell.className = "ppo-chip--" + (Math.floor(index / 9) % 4);
-    });
-
-    addCells(root.querySelector("[data-ppo-minibatch-grid]"), 18, function (cell, index) {
-      var sourceIndex = (index * 13 + 7) % 36;
-      cell.className = "ppo-chip--" + (Math.floor(sourceIndex / 9) % 4);
-      cell.style.setProperty("--chip-index", index);
-    });
 
     function updateParameters() {
       var envCount = envOptions[Number(envInput.value)];
@@ -84,7 +53,28 @@
       setText("[data-ppo-minibatch]", numberFormat.format(miniBatch));
     }
 
-    function showStage(index, announce) {
+    function centerActiveTab() {
+      var activeTab = tabs[currentStage];
+      if (activeTab && activeTab.scrollIntoView) {
+        activeTab.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest", inline: "center" });
+      }
+    }
+
+    function revealActivePanel() {
+      var activePanel = panels[currentStage];
+      if (!activePanel) {
+        return;
+      }
+
+      window.requestAnimationFrame(function () {
+        activePanel.focus({ preventScroll: true });
+        if (activePanel.scrollIntoView) {
+          activePanel.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        }
+      });
+    }
+
+    function showStage(index, announce, revealPanel) {
       currentStage = Math.max(0, Math.min(index, panels.length - 1));
 
       each(tabs, function (tab, tabIndex) {
@@ -112,6 +102,10 @@
 
       if (announce) {
         status.textContent = "Stage " + (currentStage + 1) + " of " + panels.length + ": " + stageNames[currentStage];
+        centerActiveTab();
+        if (revealPanel) {
+          revealActivePanel();
+        }
       }
     }
 
@@ -120,7 +114,7 @@
       panels[index].setAttribute("aria-labelledby", tab.id);
 
       tab.addEventListener("click", function () {
-        showStage(index, true);
+        showStage(index, true, false);
       });
 
       tab.addEventListener("keydown", function (event) {
@@ -139,17 +133,17 @@
         }
 
         event.preventDefault();
-        showStage(destination, true);
+        showStage(destination, true, false);
         tabs[destination].focus();
       });
     });
 
     previous.addEventListener("click", function () {
-      showStage(currentStage - 1, true);
+      showStage(currentStage - 1, true, true);
     });
 
     next.addEventListener("click", function () {
-      showStage(currentStage === panels.length - 1 ? 0 : currentStage + 1, true);
+      showStage(currentStage === panels.length - 1 ? 0 : currentStage + 1, true, true);
     });
 
     root.addEventListener("keydown", function (event) {
@@ -160,10 +154,10 @@
 
       if (event.key === "ArrowRight") {
         event.preventDefault();
-        showStage(currentStage === panels.length - 1 ? 0 : currentStage + 1, true);
+        showStage(currentStage === panels.length - 1 ? 0 : currentStage + 1, true, true);
       } else if (event.key === "ArrowLeft") {
         event.preventDefault();
-        showStage(currentStage === 0 ? panels.length - 1 : currentStage - 1, true);
+        showStage(currentStage === 0 ? panels.length - 1 : currentStage - 1, true, true);
       }
     });
 
@@ -172,6 +166,6 @@
 
     root.setAttribute("data-ppo-enhanced", "true");
     updateParameters();
-    showStage(0, false);
+    showStage(0, false, false);
   });
 })();
