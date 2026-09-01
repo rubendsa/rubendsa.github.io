@@ -29,3 +29,7 @@ layout: default
     </footer>
   </article>
 </main>
+
+{% if page.ppo_visualizer %}
+  <script src="{{ '/assets/js/ppo-visualizer.js' | relative_url }}" defer></script>
+{% endif %}
