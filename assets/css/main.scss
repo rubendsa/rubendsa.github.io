@@ -442,84 +442,556 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   }
 }
 
-.rlinf-flow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 7px;
-  align-items: stretch;
-  margin: 30px 0 38px;
-  padding: 14px;
-  background-color: #f2f4f0;
-  background-image: linear-gradient($notebook-rule 1px, transparent 1px), linear-gradient(90deg, $notebook-rule 1px, transparent 1px);
-  background-size: 20px 20px;
-  border: 1px solid $notebook-rule;
-  border-radius: 6px;
+.rlinf-architecture {
+  display: block;
+  width: min(1040px, calc(100vw - 48px));
+  margin: 36px 50% 42px;
+  overflow: hidden;
+  color: $notebook-ink;
+  background: #f2f6f3;
+  border: 1px solid #cfd9d4;
+  border-radius: 10px;
+  box-shadow: 0 18px 44px rgba(23, 32, 29, 0.09);
   font-family: $notebook-sans;
+  font-size: 13px;
+  line-height: 1.45;
+  transform: translateX(-50%);
+
+  p,
+  ol,
+  li {
+    margin: 0;
+  }
 }
 
-.rlinf-flow__node {
+.rlinf-architecture__header {
   display: flex;
-  min-height: 132px;
-  padding: 11px;
-  flex-direction: column;
+  gap: 28px;
+  align-items: flex-end;
   justify-content: space-between;
-  background: rgba(#fff, 0.95);
-  border: 1px solid #cfd9d4;
-  border-top: 3px solid $notebook-green;
-  border-radius: 4px;
+  padding: 24px 26px 22px;
+  background: rgba(#fff, 0.88);
+  border-bottom: 1px solid #cfd9d4;
 
-  > span {
+  p {
+    margin: 0 0 6px;
     color: $notebook-green-dark;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
-  strong {
+  h3 {
+    max-width: 620px;
+    margin: 0;
     color: $notebook-ink;
     font-family: $notebook-serif;
-    font-size: 15px;
+    font-size: 27px;
+    font-weight: 650;
+    letter-spacing: -0.025em;
     line-height: 1.15;
-  }
-
-  small {
-    color: $notebook-muted;
-    font-size: 10px;
-    line-height: 1.35;
   }
 }
 
-.rlinf-flow__node--adapter {
-  border-top-color: $notebook-clay;
+.rlinf-architecture__legend {
+  display: flex;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  color: $notebook-muted;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+
+  span {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+}
+
+.rlinf-architecture__swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 2px solid $notebook-green;
+  border-radius: 2px;
+}
+
+.rlinf-architecture__swatch--isaac {
+  background: #f8e7dd;
+  border-color: $notebook-clay;
+}
+
+.rlinf-architecture__swatch--seam {
+  background: transparent;
+  border-color: $notebook-clay;
+  border-style: dashed;
+}
+
+.rlinf-architecture__runtime {
+  padding: 20px;
+}
+
+.rlinf-architecture__runner {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.5fr);
+  gap: 24px;
+  align-items: center;
+  padding: 18px 20px;
+  color: #eff7f3;
+  background: #17352e;
+  border: 1px solid #244a40;
+  border-radius: 7px;
+}
+
+.rlinf-architecture__runner-copy {
+  > span {
+    display: block;
+    margin-bottom: 3px;
+    color: #9cd1c2;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  h4 {
+    margin: 0 0 5px;
+    color: #fff;
+    font-family: $notebook-serif;
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    color: #c8d8d2;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}
+
+.rlinf-architecture__cycle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    min-width: 0;
+    padding: 10px 9px;
+    color: #eef7f3;
+    background: rgba(#fff, 0.075);
+    border: 1px solid rgba(#fff, 0.13);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.25;
+  }
+
+  span {
+    display: block;
+    margin-bottom: 4px;
+    color: #8cc7b7;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+  }
+}
+
+.rlinf-architecture__workers {
+  display: grid;
+  grid-template-areas:
+    "env exchange rollout"
+    "placement placement training"
+    "placement placement actor";
+  grid-template-columns: minmax(260px, 1fr) 150px minmax(260px, 1fr);
+  gap: 14px;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+.rlinf-architecture__worker {
+  min-width: 0;
+  padding: 18px;
+  background: rgba(#fff, 0.96);
+  border: 1px solid #cfd9d4;
+  border-top: 4px solid $notebook-green;
+  border-radius: 6px;
+
+  > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 12px;
+    align-items: baseline;
+    margin-bottom: 14px;
+
+    > span {
+      grid-column: 1 / -1;
+      color: $notebook-green-dark;
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    h4 {
+      min-width: 0;
+      margin: 0;
+      color: $notebook-ink;
+      font-family: $notebook-serif;
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    small {
+      color: $notebook-muted;
+      font-size: 9px;
+      font-weight: 750;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+  }
+
+  > p {
+    margin-top: 13px;
+    color: $notebook-muted;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+}
+
+.rlinf-architecture__worker--env {
+  grid-area: env;
+}
+
+.rlinf-architecture__worker--rollout {
+  grid-area: rollout;
+}
+
+.rlinf-architecture__worker--actor {
+  grid-area: actor;
+}
+
+.rlinf-architecture__isaac,
+.rlinf-architecture__model,
+.rlinf-architecture__seam {
+  padding: 12px 13px;
+  border-radius: 4px;
+
+  > span,
+  > strong,
+  > small {
+    display: block;
+  }
+
+  > span {
+    margin-bottom: 4px;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  > strong {
+    color: $notebook-ink;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  > small {
+    margin-top: 4px;
+    color: $notebook-muted;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+}
+
+.rlinf-architecture__isaac {
+  background: #f8e7dd;
+  border: 1px solid #e2ad91;
 
   > span {
     color: $notebook-clay-text;
   }
 }
 
-.rlinf-flow__arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $notebook-green;
-  font-size: 16px;
+.rlinf-architecture__seam {
+  margin-top: 8px;
+  background: #fffaf6;
+  border: 1px dashed $notebook-clay;
 
-  span {
-    display: none;
+  > span {
+    color: $notebook-clay-text;
   }
 }
 
-.rlinf-flow__return {
-  grid-column: 1 / -1;
-  margin: 3px 0 0;
-  padding-top: 10px;
+.rlinf-architecture__model {
+  background: $notebook-sage;
+  border: 1px solid #bed4ca;
+
+  > span {
+    color: $notebook-green-dark;
+  }
+}
+
+.rlinf-architecture__exchange {
+  display: flex;
+  grid-area: exchange;
+  gap: 14px;
+  flex-direction: column;
+  justify-content: center;
+  color: $notebook-green-dark;
+
+  > div {
+    position: relative;
+    padding: 10px 30px 10px 0;
+    border-top: 1px solid #9ebbb1;
+  }
+
+  span,
+  small {
+    display: block;
+  }
+
+  span {
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  small {
+    margin-top: 2px;
+    color: $notebook-muted;
+    font-size: 9px;
+  }
+
+  b {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+    transform: translateY(-50%);
+  }
+}
+
+.rlinf-architecture__exchange-return {
+  padding-right: 0 !important;
+  padding-left: 30px !important;
+  text-align: right;
+
+  b {
+    right: auto;
+    left: 0;
+  }
+}
+
+.rlinf-architecture__training-exchange {
+  display: grid;
+  grid-area: training;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+  color: $notebook-green-dark;
+
+  > div {
+    display: flex;
+    min-width: 0;
+    padding: 9px 7px;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  span,
+  small,
+  b {
+    display: block;
+  }
+
+  span {
+    font-size: 9px;
+    font-weight: 850;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  small {
+    margin-top: 2px;
+    color: $notebook-muted;
+    font-size: 8px;
+  }
+
+  b {
+    margin: 2px 0;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1;
+  }
+}
+
+.rlinf-architecture__actor-steps {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  span {
+    padding: 6px 8px;
+    color: $notebook-green-dark;
+    background: $notebook-sage;
+    border: 1px solid #c8dbd3;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 750;
+  }
+}
+
+.rlinf-architecture__placement {
+  grid-area: placement;
+  padding: 18px 19px;
+  background: #e9f1ed;
+  border: 1px dashed #9ebbb1;
+  border-radius: 6px;
+
+  > span {
+    display: block;
+    margin-bottom: 4px;
+    color: $notebook-green-dark;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  h4 {
+    margin: 0 0 11px;
+    color: $notebook-ink;
+    font-family: $notebook-serif;
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.25;
+
+    code {
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      font-family: $notebook-mono;
+      font-size: 0.82em;
+    }
+  }
+
+  > p {
+    margin-top: 10px;
+    color: $notebook-muted;
+    font-size: 10px;
+  }
+}
+
+.rlinf-architecture__placement-code {
+  display: block;
+  margin-bottom: 11px;
+  padding: 9px 11px;
+  color: #e8f2ed !important;
+  background: #17352e !important;
+  border-radius: 4px !important;
+  font-family: $notebook-mono !important;
+  font-size: 11px !important;
+}
+
+.rlinf-architecture__modes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  span {
+    padding: 6px 8px;
+    color: $notebook-muted;
+    background: rgba(#fff, 0.72);
+    border: 1px solid #c8d6d0;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 750;
+  }
+
+  .is-active {
+    color: #fff;
+    background: $notebook-green-dark;
+    border-color: $notebook-green-dark;
+  }
+}
+
+.rlinf-architecture__flow-key {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px !important;
+  padding: 0;
+  counter-reset: architecture-flow;
+  list-style: none;
+
+  li {
+    position: relative;
+    min-width: 0;
+    padding: 13px 13px 13px 42px;
+    color: $notebook-muted;
+    background: rgba(#fff, 0.78);
+    border: 1px solid #d4ddd8;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1.45;
+    counter-increment: architecture-flow;
+
+    &::before {
+      position: absolute;
+      top: 13px;
+      left: 13px;
+      display: grid;
+      width: 20px;
+      height: 20px;
+      color: #fff;
+      background: $notebook-green-dark;
+      border-radius: 50%;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 850;
+      content: counter(architecture-flow);
+    }
+  }
+
+  span {
+    display: block;
+    margin-bottom: 3px;
+    color: $notebook-ink;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+}
+
+.rlinf-architecture > figcaption {
+  display: block;
+  width: auto;
+  margin: 0;
+  padding: 14px 20px 16px;
   color: $notebook-muted;
+  background: #edf2ef;
   border-top: 1px solid #cfd9d4;
+  font-family: $notebook-sans;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-align: center;
+  line-height: 1.5;
 }
 
 .notebook-article__footer {
@@ -610,41 +1082,93 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
   }
 
-  .rlinf-flow {
+  .rlinf-architecture {
+    width: 100%;
+    margin: 30px 0 38px;
+    border-radius: 7px;
+    transform: none;
+  }
+
+  .rlinf-architecture__header {
+    gap: 16px;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px 18px 18px;
+
+    h3 {
+      font-size: 23px;
+    }
+  }
+
+  .rlinf-architecture__legend {
+    justify-content: flex-start;
+    white-space: normal;
+  }
+
+  .rlinf-architecture__runtime {
+    padding: 12px;
+  }
+
+  .rlinf-architecture__runner {
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+    gap: 14px;
+    padding: 17px;
   }
 
-  .rlinf-flow__node {
-    min-height: 106px;
+  .rlinf-architecture__cycle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .rlinf-flow__arrow {
-    min-height: 24px;
-    font-size: 0;
+  .rlinf-architecture__workers {
+    grid-template-areas:
+      "env"
+      "exchange"
+      "rollout"
+      "training"
+      "actor"
+      "placement";
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
 
-    &::after {
-      font-size: 16px;
-      content: "↓";
+  .rlinf-architecture__worker {
+    padding: 16px;
+  }
+
+  .rlinf-architecture__exchange {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 14px;
+
+    > div,
+    > div.rlinf-architecture__exchange-return {
+      padding: 9px !important;
+      background: rgba(#fff, 0.7);
+      border: 1px solid #d4ddd8;
+      border-radius: 4px;
+      text-align: center;
     }
 
-    span {
-      display: inline;
-      margin-right: 7px;
-      color: $notebook-muted;
-      font-size: 9px;
-      font-weight: 750;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+    b,
+    .rlinf-architecture__exchange-return b {
+      position: static;
+      display: block;
+      margin: 5px auto 0;
+      transform: rotate(90deg);
+    }
+
+    .rlinf-architecture__exchange-return b {
+      margin: 0 auto 5px;
     }
   }
 
-  .rlinf-flow__arrow--bidirectional::after {
-    content: "↕";
+  .rlinf-architecture__training-exchange {
+    padding: 0 14px;
   }
 
-  .rlinf-flow__arrow--backward::after {
-    content: "↑";
+  .rlinf-architecture__flow-key {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .notebook-article__footer {
@@ -681,5 +1205,14 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 
   .notebook-prose {
     font-size: 11pt;
+  }
+
+
+  .rlinf-architecture {
+    width: 100%;
+    margin: 24px 0;
+    box-shadow: none;
+    break-inside: avoid;
+    transform: none;
   }
 }

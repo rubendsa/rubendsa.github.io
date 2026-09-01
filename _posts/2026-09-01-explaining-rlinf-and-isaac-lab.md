@@ -35,42 +35,142 @@ That boundary is easy to miss because both projects use the language of reinforc
 
 A conventional Isaac Lab run can keep simulation, a compact policy, and optimization in a relatively tight process. A vision-language-action model changes the shape of the workload. Camera rendering and physics want one resource profile; large-model inference wants another; backpropagation through a VLA may require sharding across several GPUs.
 
-RLinf is designed for that heterogeneous case. Its system model separates an RL workflow into workers and channels, then gives the runtime several ways to place and schedule them. The broader RLinf system calls this macro-to-micro flow transformation: the logical algorithm remains readable while execution can be collocated, disaggregated, or hybrid. The current Isaac Lab reference configuration starts conservatively by collocating the actor, rollout, and environment components; it inherits RLinf's placement abstractions rather than proving that every run is automatically optimized.
+RLinf is designed for that heterogeneous case. Its system model separates the readable RL workflow from the way that workflow executes. A Runner controls the order of operations; WorkerGroups own simulation, generation, and learning; Channels move data directly between workers; and `component_placement` maps those logical groups to hardware. RLinf's broader macro-to-micro machinery can turn the same graph into collocated, disaggregated, or hybrid execution.
 
-For the Isaac Lab path, three worker roles are the important ones:
+The architecture is easier to understand when control flow, training data, and placement are shown separately:
 
-<div class="rlinf-flow" role="group" aria-label="The Isaac Lab environment worker exchanges observations and actions with the VLA rollout worker through the YAML adapter. The environment worker sends completed trajectories to the actor worker, and updated actor weights return to the rollout worker.">
-  <div class="rlinf-flow__node rlinf-flow__node--sim">
-    <span>01 · world</span>
-    <strong>EnvWorker</strong>
-    <small>Isaac Lab interaction, rewards, and trajectory assembly</small>
-  </div>
-  <div class="rlinf-flow__arrow rlinf-flow__arrow--bidirectional" aria-hidden="true"><span>obs · actions</span>↔</div>
-  <div class="rlinf-flow__node rlinf-flow__node--adapter">
-    <span>02 · seam</span>
-    <strong>YAML + extension</strong>
-    <small>camera, state, language, and action mapping</small>
-  </div>
-  <div class="rlinf-flow__arrow rlinf-flow__arrow--bidirectional" aria-hidden="true"><span>VLA tensors</span>↔</div>
-  <div class="rlinf-flow__node rlinf-flow__node--rollout">
-    <span>03 · act</span>
-    <strong>RolloutWorker</strong>
-    <small>VLA inference and action generation</small>
-  </div>
-  <div class="rlinf-flow__arrow rlinf-flow__arrow--backward" aria-hidden="true"><span>weight sync</span>←</div>
-  <div class="rlinf-flow__node rlinf-flow__node--actor">
-    <span>04 · learn</span>
-    <strong>ActorWorker</strong>
-    <small>FSDP actor updates and runner-triggered checkpoint saves</small>
-  </div>
-  <p class="rlinf-flow__return"><span aria-hidden="true">↗</span> Completed trajectories: EnvWorker → ActorWorker <span aria-hidden="true">·</span> Updated weights: ActorWorker → RolloutWorker</p>
-</div>
+<figure class="rlinf-architecture" aria-labelledby="rlinf-architecture-title" aria-describedby="rlinf-architecture-caption">
+  <header class="rlinf-architecture__header">
+    <div>
+      <p>RLinf × Isaac Lab · reference architecture</p>
+      <h3 id="rlinf-architecture-title">Control, data, and placement are separate planes</h3>
+    </div>
+    <div class="rlinf-architecture__legend" aria-label="Diagram legend">
+      <span><i class="rlinf-architecture__swatch rlinf-architecture__swatch--worker" aria-hidden="true"></i>RLinf worker</span>
+      <span><i class="rlinf-architecture__swatch rlinf-architecture__swatch--isaac" aria-hidden="true"></i>Isaac Lab</span>
+      <span><i class="rlinf-architecture__swatch rlinf-architecture__swatch--seam" aria-hidden="true"></i>Integration seam</span>
+    </div>
+  </header>
 
-This decomposition is the reason the integration matters. The task stays an Isaac Lab task, but the expensive VLA post-training loop can use RLinf's distributed runtime.
+  <div class="rlinf-architecture__runtime">
+    <section class="rlinf-architecture__runner" aria-labelledby="rlinf-runner-title">
+      <div class="rlinf-architecture__runner-copy">
+        <span>Control plane</span>
+        <h4 id="rlinf-runner-title">EmbodiedRunner</h4>
+        <p>Invokes WorkerGroup methods, waits at synchronization barriers, and triggers actor checkpoints. Training tensors do not pass through it.</p>
+      </div>
+      <ol class="rlinf-architecture__cycle" aria-label="One synchronous training iteration">
+        <li><span>01</span>Sync weights</li>
+        <li><span>02</span>Generate rollouts</li>
+        <li><span>03</span>Compute GAE</li>
+        <li><span>04</span>Train actor</li>
+      </ol>
+    </section>
+
+    <div class="rlinf-architecture__workers">
+      <section class="rlinf-architecture__worker rlinf-architecture__worker--env" aria-labelledby="rlinf-env-title">
+        <header>
+          <span>01 · World</span>
+          <h4 id="rlinf-env-title">EnvWorker</h4>
+          <small>EnvGroup</small>
+        </header>
+        <div class="rlinf-architecture__isaac">
+          <span>Isaac Lab owns</span>
+          <strong>IsaacLabGenericEnv</strong>
+          <small>physics · sensors · observations · rewards · termination</small>
+        </div>
+        <div class="rlinf-architecture__seam">
+          <span>Translation seam · not a worker</span>
+          <strong>Extension + YAML contract</strong>
+          <small>task registration · camera/state/language mapping · action padding</small>
+        </div>
+        <p>Wraps simulator output into RLinf's canonical observation fields and applies returned actions.</p>
+      </section>
+
+      <div class="rlinf-architecture__exchange" aria-hidden="true">
+        <div>
+          <span>observations</span>
+          <small>Env Channel</small>
+          <b>→</b>
+        </div>
+        <div class="rlinf-architecture__exchange-return">
+          <b>←</b>
+          <span>action chunks</span>
+          <small>Rollout Channel</small>
+        </div>
+      </div>
+
+      <section class="rlinf-architecture__worker rlinf-architecture__worker--rollout" aria-labelledby="rlinf-rollout-title">
+        <header>
+          <span>02 · Act + collect</span>
+          <h4 id="rlinf-rollout-title">MultiStepRolloutWorker</h4>
+          <small>RolloutGroup</small>
+        </header>
+        <div class="rlinf-architecture__model">
+          <span>Reference policy</span>
+          <strong>GR00T · Hugging Face</strong>
+          <small>observation converter · VLA inference · action converter</small>
+        </div>
+        <p>Generates action chunks and assembles rollout-horizon trajectory batches with rewards, dones, old log-probs, values, and model inputs.</p>
+      </section>
+
+      <section class="rlinf-architecture__placement" aria-labelledby="rlinf-placement-title">
+        <span>Placement plane</span>
+        <h4 id="rlinf-placement-title"><code>component_placement</code> maps logical groups to hardware</h4>
+        <code class="rlinf-architecture__placement-code">actor,env,rollout: all</code>
+        <div class="rlinf-architecture__modes" aria-label="RLinf placement modes">
+          <span class="is-active">Reference · collocated</span>
+          <span>Disaggregated</span>
+          <span>Hybrid</span>
+        </div>
+        <p>The worker graph stays the same when its device map changes.</p>
+      </section>
+
+      <div class="rlinf-architecture__training-exchange" aria-hidden="true">
+        <div>
+          <span>trajectory batches</span>
+          <small>Actor Channel</small>
+          <b>↓</b>
+        </div>
+        <div>
+          <b>↑</b>
+          <span>updated weights</span>
+          <small>WeightSyncer</small>
+        </div>
+      </div>
+
+      <section class="rlinf-architecture__worker rlinf-architecture__worker--actor" aria-labelledby="rlinf-actor-title">
+        <header>
+          <span>03 · Learn</span>
+          <h4 id="rlinf-actor-title">EmbodiedFSDPActor</h4>
+          <small>ActorGroup</small>
+        </header>
+        <div class="rlinf-architecture__actor-steps">
+          <span>advantages + returns</span>
+          <span>actor–critic objective</span>
+          <span>FSDP update</span>
+        </div>
+        <p>Owns the trainable policy state; the Runner periodically saves it and synchronizes fresh weights back to rollout.</p>
+      </section>
+    </div>
+
+    <ol class="rlinf-architecture__flow-key" aria-label="The three data flows in the RLinf Isaac Lab training loop">
+      <li><span>Act</span>EnvWorker sends mapped observations to RolloutWorker; action chunks return.</li>
+      <li><span>Learn</span>RolloutWorker sends trajectory batches to the actor for advantage computation and training.</li>
+      <li><span>Refresh</span>Actor weights and their version move back to rollout before the next configured interval.</li>
+    </ol>
+  </div>
+
+  <figcaption id="rlinf-architecture-caption">The Runner controls the workflow, but Channels carry the data directly between workers. The extension and YAML configure the simulator/model boundary; they are not a fourth runtime worker.</figcaption>
+</figure>
+
+This diagram follows the `rlinf==0.2.0dev2` dependency currently documented by Isaac Lab. RLinf's `main` branch has since moved some trajectory assembly into `EnvWorker`, but the durable architectural idea is unchanged: the simulator, inference engine, and trainer are independent worker groups connected by explicit data paths.
+
+That decomposition is the reason the integration matters. The task stays an Isaac Lab task, while the expensive VLA post-training loop uses RLinf's control, communication, and placement machinery.
 
 ## The integration seam
 
-The integration lives in `isaaclab_contrib`, Isaac Lab's incubator for community-maintained features. From the user's side, RLinf appears as another backend behind the unified `train` and `play` entry points. Underneath, the launcher tells RLinf to load an Isaac Lab extension module and points it at the active Hydra configuration.
+The Isaac Lab-specific extension lives in `isaaclab_contrib`, Isaac Lab's incubator for community-maintained features. The wider path also uses Isaac Lab's unified backend dispatcher and a task-specific YAML configuration. From the user's side, RLinf appears as another backend behind the unified `train` and `play` entry points. Underneath, the launcher tells RLinf to load the extension module and points it at the active Hydra configuration.
 
 The extension performs three jobs at startup:
 
@@ -86,9 +186,9 @@ The YAML file is therefore more than a bag of hyperparameters. It is the **seman
 | --- | --- |
 | Isaac Lab task | Scene, robot, sensors, observation terms, actions, reward, termination |
 | `env.train.isaaclab` YAML | Camera names, state slices, language instruction, GR00T keys, action padding |
-| RLinf environment worker | Parallel simulator interaction, rollout-ready observations, and trajectory assembly |
-| RLinf rollout worker | VLA inference and action generation |
-| RLinf actor worker | PPO-style actor–critic optimization, FSDP sharding, runner-triggered checkpoint saves, updated weights |
+| RLinf environment worker | Parallel Isaac Lab interaction, canonical observation wrapping, rewards, and episode signals |
+| RLinf rollout worker | VLA inference, action conversion, and rollout-horizon trajectory assembly in the pinned reference version |
+| RLinf actor worker | Advantage/return computation, actor–critic optimization, FSDP sharding, and trainable checkpoint state |
 
 </div>
 
@@ -98,11 +198,11 @@ The reference trocar assembly task makes the contract concrete. It maps a front 
 
 Walking a single transition makes the architecture easier to see:
 
-1. The environment worker steps many Isaac Lab environments and receives camera images, state tensors, rewards, and episode signals.
-2. The integration wrapper gathers the configured observation keys. The GR00T converter renames and reshapes them into the model's expected video, state, and language modalities.
-3. The rollout worker runs the VLA and emits an action chunk.
-4. The action converter maps that chunk back to the Isaac Lab action layout, including any configured prefix or suffix padding. Isaac Lab applies the action and advances physics.
-5. The environment interaction worker sends completed trajectories to the actor worker. The actor computes the RL objective and updates the sharded model; the runner coordinates checkpoint saves and synchronizes fresh weights back to rollout.
+1. The environment worker steps many Isaac Lab environments and receives camera images, state tensors, rewards, and episode signals. Its wrapper gathers the configured keys into RLinf's canonical observation fields.
+2. An Env Channel carries those observations to the rollout worker. The registered GR00T converter renames and reshapes them into the model's expected video, state, and language modalities.
+3. The rollout worker runs the VLA. Its action converter pads and maps the resulting chunk back to the Isaac Lab joint-action layout, then a Rollout Channel returns it to the environment worker.
+4. Isaac Lab applies the action and advances physics. In the pinned reference version, the rollout worker accumulates the resulting actions, rewards, dones, old log-probs, values, and model inputs into trajectory batches.
+5. An Actor Channel carries those batches to the actor worker. The actor computes advantages and returns, updates the sharded model, and exposes fresh weights; the Runner coordinates checkpoint saves and the next actor-to-rollout synchronization.
 
 The critical engineering work is at steps two and four. A tensor can have a valid shape and still carry the wrong meaning. Camera order, joint order, slice boundaries, time dimensions, and action chunking all need to agree.
 
@@ -166,4 +266,7 @@ That separation is the design win. Robotics researchers can keep task logic clos
 - [Isaac Lab's RLinf extension](https://github.com/isaac-sim/IsaacLab/blob/develop/source/isaaclab_contrib/isaaclab_contrib/rl/rlinf/extension.py)
 - [Isaac Lab's reference trocar training configuration](https://github.com/isaac-sim/IsaacLab/blob/develop/source/isaaclab_tasks/isaaclab_tasks/contrib/assemble_trocar/config/isaaclab_ppo_gr00t_assemble_trocar.yaml)
 - [RLinf repository and examples](https://github.com/RLinf/RLinf)
+- [RLinf execution flow: Runner, WorkerGroups, and Channels](https://rlinf.readthedocs.io/en/latest/rst_source/concepts/execution_flow.html)
+- [RLinf high-level programming and training flow](https://rlinf.readthedocs.io/en/latest/rst_source/concepts/flow.html)
+- [RLinf execution and placement modes](https://rlinf.readthedocs.io/en/latest/rst_source/concepts/execution_modes.html)
 - [RLinf systems paper](https://arxiv.org/abs/2509.15965)
