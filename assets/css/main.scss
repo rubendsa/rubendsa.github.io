@@ -25,6 +25,7 @@ $notebook-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
 $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 
 .notebook-theme {
+  min-height: 100vh;
   color: $notebook-ink;
   background: $notebook-paper;
 
