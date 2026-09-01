@@ -1,6 +1,6 @@
 ---
 layout: notebook-home
-title: "Notes on building robots that learn"
+title: "Blog"
 description: "Long-form notes by Ruben D'Sa on robot learning, simulation, and the systems that connect them."
 permalink: /blog/
 author_profile: false

@@ -2,47 +2,28 @@
 layout: default
 ---
 
-<a class="notebook-skip" href="#notebook-content">Skip to the latest article</a>
+<a class="notebook-skip" href="#blog-entries">Skip to blog entries</a>
 
-<main class="notebook-shell" id="main">
-  <header class="notebook-intro">
+<main class="blog-index" id="main">
+  <header class="blog-index__header">
     <p class="notebook-kicker">Ruben D'Sa · Field notes</p>
-    <h1>Notes on building robots that learn.</h1>
-    <p class="notebook-intro__copy">Long-form explanations from the seam between simulation, learning systems, and real machines.</p>
+    <h1>Blog</h1>
+    <p>Notes on robot learning, simulation, and the systems that connect them.</p>
   </header>
 
-  <div class="notebook-grid">
-    <section class="notebook-feed" id="notebook-content" aria-label="Latest articles" tabindex="-1">
-      {% for post in site.posts %}
-        <article class="notebook-article notebook-article--feed" itemscope itemtype="https://schema.org/BlogPosting">
-          <header class="notebook-article__header">
-            <p class="notebook-article__number">Entry {{ forloop.rindex | prepend: '0' | slice: -2, 2 }}</p>
-            <h2 itemprop="headline"><a href="{{ post.url | relative_url }}" rel="bookmark">{{ post.title }}</a></h2>
-            {% if post.subtitle %}<p class="notebook-deck" itemprop="description">{{ post.subtitle }}</p>{% endif %}
-            <div class="notebook-meta">
-              <time datetime="{{ post.date | date_to_xmlschema }}" itemprop="datePublished">{{ post.date | date: "%B %-d, %Y" }}</time>
-              <span aria-hidden="true">·</span>
-              <span>{% include read-time.html %}</span>
-            </div>
-          </header>
-
-          {% if forloop.first %}
-            <div class="notebook-prose" itemprop="articleBody">
-              {{ post.content }}
-            </div>
-            <footer class="notebook-article__footer">
-              <a href="{{ post.url | relative_url }}">Permalink to this entry <span aria-hidden="true">→</span></a>
-            </footer>
-          {% else %}
-            <p class="notebook-article__excerpt">{{ post.excerpt | strip_html }}</p>
-            <a class="notebook-read-more" href="{{ post.url | relative_url }}">Read entry <span aria-hidden="true">→</span></a>
-          {% endif %}
-        </article>
-      {% else %}
-        <p>No entries yet.</p>
-      {% endfor %}
-    </section>
-
-    {% include notebook-rail.html %}
-  </div>
+  <section class="blog-list" id="blog-entries" aria-labelledby="blog-list-title" tabindex="-1">
+    <h2 class="blog-list__title" id="blog-list-title">Entries</h2>
+    {% for post in site.posts %}
+      <article class="blog-list__item" itemscope itemtype="https://schema.org/BlogPosting">
+        <time datetime="{{ post.date | date_to_xmlschema }}" itemprop="datePublished">{{ post.date | date: "%b %-d, %Y" }}</time>
+        <div class="blog-list__body">
+          <h3 itemprop="headline"><a href="{{ post.url | relative_url }}" rel="bookmark">{{ post.title }}</a></h3>
+          <p itemprop="description">{{ post.excerpt | strip_html }}</p>
+          <span class="blog-list__read-time">{% include read-time.html %}</span>
+        </div>
+      </article>
+    {% else %}
+      <p>No entries yet.</p>
+    {% endfor %}
+  </section>
 </main>

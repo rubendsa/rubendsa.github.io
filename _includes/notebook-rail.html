@@ -4,17 +4,21 @@
     <p>Working notes on robot learning, simulation, and the systems that connect them.</p>
   </section>
 
-  <section class="notebook-rail__section">
-    <h2>Recent</h2>
-    <ol class="notebook-rail__list">
-      {% for recent_post in site.posts limit:5 %}
-        <li>
-          <a href="{{ recent_post.url | relative_url }}">{{ recent_post.title }}</a>
-          <time datetime="{{ recent_post.date | date_to_xmlschema }}">{{ recent_post.date | date: "%b %Y" }}</time>
-        </li>
-      {% endfor %}
-    </ol>
-  </section>
+  {% if site.posts.size > 1 %}
+    <section class="notebook-rail__section">
+      <h2>More notes</h2>
+      <ol class="notebook-rail__list">
+        {% for recent_post in site.posts limit:6 %}
+          {% unless recent_post.url == page.url %}
+            <li>
+              <a href="{{ recent_post.url | relative_url }}">{{ recent_post.title }}</a>
+              <time datetime="{{ recent_post.date | date_to_xmlschema }}">{{ recent_post.date | date: "%b %Y" }}</time>
+            </li>
+          {% endunless %}
+        {% endfor %}
+      </ol>
+    </section>
+  {% endif %}
 
   <section class="notebook-rail__section">
     <h2>Elsewhere</h2>

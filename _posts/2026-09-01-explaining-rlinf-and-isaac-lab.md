@@ -19,10 +19,6 @@ header:
   og_image: /images/rlinf-isaac-lab-social.png
 ---
 
-<figure class="notebook-cover">
-  <img src="{{ '/images/rlinf-isaac-lab-social.png' | relative_url }}" alt="An editorial systems diagram connecting a simulated robot, VLA inference, and distributed training." width="1672" height="941">
-</figure>
-
 The shortest useful explanation of the integration is this: **Isaac Lab owns the robotics problem; RLinf owns the learning system around it.** Isaac Lab simulates the robot and its sensors, defines observations and actions, computes rewards, and decides when an episode ends. RLinf coordinates model inference, experience collection, distributed policy updates, weight synchronization, and checkpoints.
 
 That boundary is easy to miss because both projects use the language of reinforcement learning. They solve different layers of the same loop.
