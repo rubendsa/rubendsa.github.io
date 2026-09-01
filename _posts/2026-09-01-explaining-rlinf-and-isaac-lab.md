@@ -15,6 +15,9 @@ tags:
   - reinforcement learning
 classes:
   - notebook-theme
+author_profile: false
+sidebar: false
+toc: false
 header:
   og_image: /images/rlinf-isaac-lab-social.png
 ---

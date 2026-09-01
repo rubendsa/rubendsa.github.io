@@ -29,12 +29,14 @@
       </div>
     {% endif %}
 
-    <div class="page__footer">
-      <footer>
-        {% include footer/custom.html %}
-        {% include_cached footer.html %}
-      </footer>
-    </div>
+    {% unless page.classes contains "notebook-theme" %}
+      <div class="page__footer">
+        <footer>
+          {% include footer/custom.html %}
+          {% include_cached footer.html %}
+        </footer>
+      </div>
+    {% endunless %}
 
     {% include scripts.html %}
 

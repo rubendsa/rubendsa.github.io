@@ -69,11 +69,10 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     min-height: 70vh;
   }
 
-  .page__footer {
-    margin-top: 0;
-    color: $notebook-muted;
-    background: #f0f1ed;
-    border-top: 1px solid $notebook-rule;
+  .sidebar,
+  .sidebar__right,
+  .notebook-rail {
+    display: none !important;
   }
 }
 
@@ -667,7 +666,6 @@ $notebook-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 
 @media print {
   .notebook-theme .masthead,
-  .notebook-theme .page__footer,
   .notebook-back,
   .notebook-article__footer {
     display: none;
